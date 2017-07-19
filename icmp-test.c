@@ -69,7 +69,9 @@ int main (int argc, char **argv)
 {
     clear();
 
-    print_tb("Test ICMP Packet Sender\n| By Nathan Fiscaletti\n| v0.1.1 - July, 2017");
+    print_tb(
+        "Test ICMP Packet Sender\n| By Nathan Fiscaletti\n| v0.1.1 - July, 2017"
+    );
     printf("\n");
 
     if (argc < 2) {
@@ -186,12 +188,12 @@ void recv_echo ()
     }
 }
 
-void print_sep()
+void print_sep ()
 {
     printf("+--------------------------------\n");
 }
 
-void print_tb(char* title)
+void print_tb (char* title)
 {
     print_sep();
     printf("| ");
@@ -200,7 +202,7 @@ void print_tb(char* title)
     print_sep();
 }
 
-void print_usage(char* exe, char* r)
+void print_usage (char* exe, char* r)
 {
     print_tb("Invalid Invocation");
     printf("| Reason: ");
@@ -214,7 +216,7 @@ void print_usage(char* exe, char* r)
     printf("\n");
 }
 
-int ip_valid(char *ip)
+int ip_valid (char *ip)
 {
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
