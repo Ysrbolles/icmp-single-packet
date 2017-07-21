@@ -45,8 +45,13 @@
 
 #define ICMP_ECHOREPLY  0
 #define ICMP_ECHOREQ_LEN  sizeof(struct ip) + sizeof(struct icmp)
-typedef char c;
 
+/* --------------------- */
+/*   Type Declarations   */
+/* --------------------- */
+
+typedef char c;
+typedef unsigned char uc;
 
 /* --------------------- */
 /* Property Declarations */
@@ -58,7 +63,7 @@ int                     s;                 // Socket file descriptor
 struct  sockaddr_in     from;              // The source address
 int                     ident;             // Identifier
 struct  protoent       *proto;             // The protocol
-u_char                  packet[4096];      // Packet buffer for reply
+uc                      packet[4096];      // Packet buffer for reply
 
 /* --------------------- */
 /* Function declarations */
@@ -66,28 +71,28 @@ u_char                  packet[4096];      // Packet buffer for reply
 
 // Console Functions
 #define clear()     printf("\033[2J\033[H");
-void    fatal       ( char* message, int code         );
-void    v_cli       ( int argc, char **argv           );
+void    fatal       ( c* message, int code         );
+void    v_cli       ( int argc, c **argv           );
 
 // ICMP Functions
-void    ping        ( char* src_addr, char* dst_addr  );
+void    ping        ( c* src_addr, c* dst_addr  );
 int     icmp_cksum  ( uint16_t *buffer, uint32_t size );
 u_short ip_cksum    ( u_short *buf, int nwords        );
 void    recv_echo   (   /* No parameter */            );
-int     ip_valid    ( char *ip                        );
-void    build_pack  ( u_char *outpack, c* src, c* dst );
+int     ip_valid    ( c *ip                        );
+void    build_pack  ( uc *outpack, c* src, c* dst );
 
 // UI Functions
-void    print_tb    ( char* title                     );
+void    print_tb    ( c* title                     );
 void    print_sep   (   /* No parameter */            );
-void    print_usage ( char* exe, char* r              );
-void    disp_packet ( u_char* packet, size_t len      );
+void    print_usage ( c* exe, c* r              );
+void    disp_packet ( uc* packet, size_t len      );
 
 /* --------------------- */
 /*       Main Code       */
 /* --------------------- */
 
-int main (int argc, char **argv)
+int main (int argc, c **argv)
 {
     clear();
     v_cli(argc, argv);
@@ -98,10 +103,10 @@ int main (int argc, char **argv)
     exit(EXIT_SUCCESS);
 }
 
-void ping (char* src_addr, char* dst_addr)
+void ping (c* src_addr, c* dst_addr)
 {
     struct  sockaddr_in    *to = (struct sockaddr_in *) &whereto;
-    bzero((char *)&whereto, sizeof(struct sockaddr_in) );
+    bzero((c *)&whereto, sizeof(struct sockaddr_in) );
 
     to->sin_family = AF_INET;
     to->sin_addr.s_addr = inet_addr(dst_addr);
@@ -115,7 +120,7 @@ void ping (char* src_addr, char* dst_addr)
     }
 
     ident = getpid() & 0xFFFF;
-    u_char *outpack = malloc(ICMP_ECHOREQ_LEN);
+    uc *outpack = malloc(ICMP_ECHOREQ_LEN);
 
     build_pack(outpack, src_addr, dst_addr);
 
@@ -171,10 +176,10 @@ void recv_echo ()
         int hlen = ip->ip_hl << 2;
         icp = (struct icmp *) (packet + hlen);
 
-        char out_src[INET_ADDRSTRLEN];
+        c out_src[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(ip->ip_src.s_addr), out_src, INET_ADDRSTRLEN);
 
-        char out_dst[INET_ADDRSTRLEN];
+        c out_dst[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(ip->ip_dst.s_addr), out_dst, INET_ADDRSTRLEN);
 
         // Validate the ICMP packet
@@ -198,7 +203,7 @@ void recv_echo ()
     }
 }
 
-void build_pack ( u_char *outpack, c* src, c* dst )
+void build_pack ( uc *outpack, c* src, c* dst )
 {
     struct ip *ip = (struct ip*) outpack;
     struct icmp *icp = (struct icmp *) (outpack + sizeof(struct ip));
@@ -231,7 +236,7 @@ void print_sep ()
     printf("+--------------------------------\n");
 }
 
-void print_tb (char* title)
+void print_tb (c* title)
 {
     print_sep();
     printf("| ");
@@ -240,7 +245,7 @@ void print_tb (char* title)
     print_sep();
 }
 
-void print_usage (char* exe, char* r)
+void print_usage (c* exe, c* r)
 {
     print_tb("Invalid Invocation");
     printf("| Reason: ");
@@ -254,15 +259,15 @@ void print_usage (char* exe, char* r)
     printf("\n");
 }
 
-int ip_valid (char *ip)
+int ip_valid (c *ip)
 {
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
 }
 
-void fatal(char* message, int code) 
+void fatal(c* message, int code) 
 {
-    char title[32];
+    c title[32];
     sprintf(title, "Error - EN: %i, EC: %i", errno, code);
     print_tb(title);
     printf("| %s\n", message);
@@ -270,9 +275,9 @@ void fatal(char* message, int code)
     exit(code);
 }
 
-void disp_packet(u_char* packet, size_t len)
+void disp_packet(uc* packet, size_t len)
 {
-    char title[32];
+    c title[32];
     sprintf(title, "Packet - Len %zu\n", len);
     printf("| %s", title);
     print_sep();
@@ -300,14 +305,14 @@ int icmp_cksum (uint16_t *buffer, uint32_t size)
     }
     if(size ) 
     {
-        cksum += *(unsigned char*)buffer;
+        cksum += *(uc*)buffer;
     }
     cksum = (cksum >> 16) + (cksum & 0xffff);
     cksum += (cksum >>16);
     return (uint16_t)(~cksum);
 }
 
-void v_cli(int argc, char **argv)
+void v_cli(int argc, c **argv)
 {
     if (argc < 2) {
         print_usage(argv[0], "Missing parameter 'src'");
