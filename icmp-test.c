@@ -64,22 +64,22 @@ int16_t                 dump_validate;     // The ID used for ICMP (reply/req)
 
 // Console Functions
 #define clear()     printf("\033[2J\033[H");
-void    fatal       ( c* message, int code         );
-void    v_cli       ( int argc, c **argv           );
+void    fatal       ( c* message, int code            );
+void    v_cli       ( int argc, c **argv              );
 
 // ICMP Functions
-void    ping        ( c* src_addr, c* dst_addr  );
+void    ping        ( c* src_addr, c* dst_addr        );
 int     icmp_cksum  ( uint16_t *buffer, uint32_t size );
 u_short ip_cksum    ( u_short *buf, int nwords        );
 void    recv_echo   (   /* No parameter */            );
-int     ip_valid    ( c *ip                        );
-void    build_pack  ( uc *outpack, c* src, c* dst );
+int     ip_valid    ( c *ip                           );
+void    build_pack  ( uc *outpack, c* src, c* dst     );
 
 // UI Functions
-void    print_tb    ( c* title                     );
+void    print_tb    ( c* title                        );
 void    print_sep   (   /* No parameter */            );
-void    print_usage ( c* exe, c* r              );
-void    disp_packet ( uc* packet, size_t len      );
+void    print_usage ( c* exe, c* r                    );
+void    disp_packet ( uc* packet, size_t len          );
 
 /* --------------------- */
 /*       Main Code       */
