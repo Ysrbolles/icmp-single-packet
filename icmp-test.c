@@ -37,12 +37,6 @@
 #define ERROR_MAL_PCKT  7
 #define ERROR_SSO_FAIL  8
 
-#define DUMP_VALIDATE   0x0aa0             // The ID of the outgoing packet's IP
-                                           // header is set to this value. You 
-                                           // can then compare it in TCP dumps
-                                           // to verify that the IP header is
-                                           // being properly modified.
-
 #define ICMP_ECHOREPLY  0
 #define ICMP_ECHOREQ_LEN  sizeof(struct ip) + sizeof(struct icmp)
 
@@ -60,9 +54,9 @@ typedef unsigned char   uc;
 struct  sockaddr        whereto;           // Who to ping
 int                     s;                 // Socket file descriptor
 struct  sockaddr_in     from;              // The source address
-int                     ident;             // Identifier
 struct  protoent       *proto;             // The protocol
 uc                      packet[4096];      // Packet buffer for reply
+int16_t                 dump_validate;     // The ID used for ICMP (reply/req)
 
 /* --------------------- */
 /* Function declarations */
@@ -118,7 +112,6 @@ void ping (c* src_addr, c* dst_addr)
         fatal("SOCKET: No permission.", ERROR_NO_PERM);
     }
 
-    ident = getpid() & 0xFFFF;
     uc *outpack = malloc(ICMP_ECHOREQ_LEN);
 
     build_pack(outpack, src_addr, dst_addr);
@@ -184,8 +177,9 @@ void recv_echo ()
 
         // Validate the ICMP packet
         if (! (
-            ip->ip_p == IPPROTO_ICMP
-         && icp->icmp_type == ICMP_ECHOREPLY
+            ip->ip_p            == IPPROTO_ICMP
+         && icp->icmp_type      == ICMP_ECHOREPLY
+         && ntohs(icp->icmp_id) == dump_validate
         )) {
             print_sep();
             disp_packet(packet, cc);
@@ -205,6 +199,8 @@ void recv_echo ()
 
 void build_pack ( uc *outpack, c* src, c* dst )
 {
+    dump_validate = rand();
+
     struct ip *ip    = (struct ip*)    outpack;
     struct icmp *icp = (struct icmp *) (outpack + sizeof(struct ip));
 
@@ -212,7 +208,7 @@ void build_pack ( uc *outpack, c* src, c* dst )
     ip->ip_v          = 4;
     ip->ip_tos        = 0;
     ip->ip_len        = sizeof(struct ip) + sizeof(struct icmp);
-    ip->ip_id         = htons(DUMP_VALIDATE);
+    ip->ip_id         = 0;
     ip->ip_off        = 0;
     ip->ip_ttl        = 255;
     ip->ip_p          = IPPROTO_ICMP;
@@ -224,7 +220,7 @@ void build_pack ( uc *outpack, c* src, c* dst )
     icp->icmp_code    = 0;
     icp->icmp_cksum   = 0;
     icp->icmp_seq     = 1;
-    icp->icmp_id      = ident;
+    icp->icmp_id      = htons(dump_validate);
 
     // Compute checksums
     ip->ip_sum      = ip_cksum   ((u_short*)ip , ip->ip_len         );
