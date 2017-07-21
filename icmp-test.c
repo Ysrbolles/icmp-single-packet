@@ -291,23 +291,6 @@ void disp_packet(uc* packet, size_t len)
     print_sep();
 }
 
-int icmp_cksum (uint16_t *buffer, uint32_t size)
-{
-    unsigned long cksum=0;
-    while(size >1) 
-    {
-        cksum+=*buffer++;
-        size -=sizeof(unsigned short);
-    }
-    if(size ) 
-    {
-        cksum += *(uc*)buffer;
-    }
-    cksum = (cksum >> 16) + (cksum & 0xffff);
-    cksum += (cksum >>16);
-    return (uint16_t)(~cksum);
-}
-
 void v_cli(int argc, c **argv)
 {
     if (argc < 2) {
@@ -324,6 +307,23 @@ void v_cli(int argc, c **argv)
         print_usage(argv[0], "IP Address invalid.");
         exit(ERROR_BAD_P);
     }
+}
+
+int icmp_cksum (uint16_t *buffer, uint32_t size)
+{
+    unsigned long cksum=0;
+    while(size >1) 
+    {
+        cksum+=*buffer++;
+        size -=sizeof(unsigned short);
+    }
+    if(size ) 
+    {
+        cksum += *(uc*)buffer;
+    }
+    cksum = (cksum >> 16) + (cksum & 0xffff);
+    cksum += (cksum >>16);
+    return (uint16_t)(~cksum);
 }
 
 u_short ip_cksum (u_short *buf, int nwords)
