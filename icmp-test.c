@@ -50,15 +50,14 @@
 /*   Type Declarations   */
 /* --------------------- */
 
-typedef char c;
-typedef unsigned char uc;
+typedef char            c;
+typedef unsigned char   uc;
 
 /* --------------------- */
 /* Property Declarations */
 /* --------------------- */
 
 struct  sockaddr        whereto;           // Who to ping
-int                     datalen;           // How much data
 int                     s;                 // Socket file descriptor
 struct  sockaddr_in     from;              // The source address
 int                     ident;             // Identifier
