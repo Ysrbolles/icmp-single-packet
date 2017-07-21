@@ -45,6 +45,7 @@
 
 #define ICMP_ECHOREPLY  0
 #define ICMP_ECHOREQ_LEN  sizeof(struct ip) + sizeof(struct icmp)
+typedef char c;
 
 
 /* --------------------- */
@@ -74,6 +75,7 @@ int     icmp_cksum  ( uint16_t *buffer, uint32_t size );
 u_short ip_cksum    ( u_short *buf, int nwords        );
 void    recv_echo   (   /* No parameter */            );
 int     ip_valid    ( char *ip                        );
+void    build_pack  ( u_char *outpack, c* src, c* dst );
 
 // UI Functions
 void    print_tb    ( char* title                     );
@@ -115,30 +117,10 @@ void ping (char* src_addr, char* dst_addr)
     ident = getpid() & 0xFFFF;
     u_char *outpack = malloc(ICMP_ECHOREQ_LEN);
 
+    build_pack(outpack, src_addr, dst_addr);
+
     struct ip *ip = (struct ip*) outpack;
     struct icmp *icp = (struct icmp *) (outpack + sizeof(struct ip));
-
-    ip->ip_hl  = 5; // Bit field, 5 = 20 bytes
-    ip->ip_v   = 4;
-    ip->ip_tos = 0;
-    ip->ip_len = sizeof(struct ip) + sizeof(struct icmp);
-    ip->ip_id  = htons(DUMP_VALIDATE);
-    ip->ip_off = 0;
-    ip->ip_ttl = 255;
-    ip->ip_p   = IPPROTO_ICMP;
-    ip->ip_sum = 0;
-    ip->ip_src.s_addr = inet_addr(src_addr);
-    ip->ip_dst.s_addr = inet_addr(dst_addr);
-
-    icp->icmp_type = ICMP_ECHO;
-    icp->icmp_code = 0;
-    icp->icmp_cksum = 0;
-    icp->icmp_seq = 1;
-    icp->icmp_id = ident;
-
-    // Compute checksums
-    ip->ip_sum = ip_cksum ((u_short*)ip, ip->ip_len);
-    icp->icmp_cksum = icmp_cksum( (u_short*)icp, sizeof(struct icmp) );
 
     print_tb("Sending ICMP Echo Request");
     printf("| Source IP      : %s\n", src_addr);
@@ -214,6 +196,34 @@ void recv_echo ()
         print_sep();
         disp_packet(packet, cc);
     }
+}
+
+void build_pack ( u_char *outpack, c* src, c* dst )
+{
+    struct ip *ip = (struct ip*) outpack;
+    struct icmp *icp = (struct icmp *) (outpack + sizeof(struct ip));
+
+    ip->ip_hl  = 5; // Bit field, 5 = 20 bytes
+    ip->ip_v   = 4;
+    ip->ip_tos = 0;
+    ip->ip_len = sizeof(struct ip) + sizeof(struct icmp);
+    ip->ip_id  = htons(DUMP_VALIDATE);
+    ip->ip_off = 0;
+    ip->ip_ttl = 255;
+    ip->ip_p   = IPPROTO_ICMP;
+    ip->ip_sum = 0;
+    ip->ip_src.s_addr = inet_addr(src);
+    ip->ip_dst.s_addr = inet_addr(dst);
+
+    icp->icmp_type = ICMP_ECHO;
+    icp->icmp_code = 0;
+    icp->icmp_cksum = 0;
+    icp->icmp_seq = 1;
+    icp->icmp_id = ident;
+
+    // Compute checksums
+    ip->ip_sum = ip_cksum ((u_short*)ip, ip->ip_len);
+    icp->icmp_cksum = icmp_cksum( (u_short*)icp, sizeof(struct icmp) );
 }
 
 void print_sep ()
