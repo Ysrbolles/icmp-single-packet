@@ -199,10 +199,10 @@ void recv_echo ()
 
 void build_pack ( uc *outpack, c* src, c* dst )
 {
-    dump_validate = rand();
+    dump_validate     = rand();
 
-    struct ip *ip    = (struct ip*)    outpack;
-    struct icmp *icp = (struct icmp *) (outpack + sizeof(struct ip));
+    struct ip *ip     = (struct ip*)    outpack;
+    struct icmp *icp  = (struct icmp *) (outpack + sizeof(struct ip));
 
     ip->ip_hl         = 5; // Bit field, 5 = 20 bytes
     ip->ip_v          = 4;
