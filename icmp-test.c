@@ -55,7 +55,6 @@ struct  sockaddr        whereto;           // Who to ping
 int                     s;                 // Socket file descriptor
 struct  sockaddr_in     from;              // The source address
 struct  protoent       *proto;             // The protocol
-uc                      packet[4096];      // Packet buffer for reply
 int16_t                 dump_validate;     // The ID used for ICMP (reply/req)
 
 /* --------------------- */
@@ -153,13 +152,14 @@ void ping (c* src_addr, c* dst_addr)
 
 void recv_echo ()
 {
-    int len = sizeof (packet);
+    char* packet = malloc(ICMP_ECHOREQ_LEN);
     int fromlen = sizeof (from);
     int cc;
 
     if ( (cc=recvfrom(
-                 s, packet, len, 0,
+                 s, packet, ICMP_ECHOREQ_LEN, 0,
                  (struct sockaddr *)&from, (socklen_t*)&fromlen)) < 0) {
+        free(packet);
         fatal("PING: recvfrom failed.", ERROR_RCV_FAIL);
     } else {
         struct ip *ip;
@@ -184,6 +184,7 @@ void recv_echo ()
             print_sep();
             disp_packet(packet, cc);
             printf("\n");
+            free(packet);
             fatal("Received a malformed packet.", ERROR_MAL_PCKT);
         }
 
@@ -194,6 +195,7 @@ void recv_echo ()
         printf("| Packet Length  : %i \n", cc);
         print_sep();
         disp_packet(packet, cc);
+        free(packet);
     }
 }
 
