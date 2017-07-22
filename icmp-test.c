@@ -73,7 +73,7 @@
 /* Constant Declarations */
 /* --------------------- */
 
-#define EXIT_SUCCESS    0                  // Exit Codes
+#define EXIT_SUCCESS    0
 #define ERROR_P_MISSING 1
 #define ERROR_BAD_P     2
 #define ERROR_NO_PROTO  3
@@ -84,24 +84,23 @@
 #define ERROR_SSO_FAIL  8
 
 #define ICMP_ECHOREPLY  0
-#define ICMP_ECHOREQ_LEN  sizeof(struct ip) + sizeof(struct icmp)
+#define ICMP_ECHOREQEST 8
+#define ICMP_ECHO_LEN   sizeof(struct ip) +\
+                        sizeof(struct icmp)
 
 /* --------------------- */
 /*   Type Declarations   */
 /* --------------------- */
 
-typedef char            c;
+typedef char             c;
 typedef unsigned char   uc;
 
 /* --------------------- */
 /* Property Declarations */
 /* --------------------- */
 
-struct  sockaddr        whereto;           // Who to ping
-int                     s;                 // Socket file descriptor
-struct  sockaddr_in     from;              // The source address
-struct  protoent       *proto;             // The protocol
-int16_t                 dump_validate;     // The ID used for ICMP (reply/req)
+int                      s;     // Socket file descriptor
+int16_t      dump_validate;     // The ID used for ICMP (reply/req)
 
 /* --------------------- */
 /* Function declarations */
@@ -143,9 +142,11 @@ int main (int argc, c **argv)
 
 void ping (c* src_addr, c* dst_addr)
 {
+    struct  sockaddr        whereto;
+    struct  protoent       *proto;
     struct  sockaddr_in    *to = (struct sockaddr_in *) &whereto;
-    bzero((c *)&whereto, sizeof(struct sockaddr_in) );
 
+    bzero((c *)&whereto, sizeof(struct sockaddr_in) );
     to->sin_family = AF_INET;
     to->sin_addr.s_addr = inet_addr(dst_addr);
 
@@ -153,11 +154,11 @@ void ping (c* src_addr, c* dst_addr)
         fatal("ICMP: Unknown Protocol.", ERROR_NO_PROTO);
     }
 
-    if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
+    if ((s = socket(AF_INET, SOCK_RAW, proto->p_proto)) < 0) {
         fatal("SOCKET: No permission.", ERROR_NO_PERM);
     }
 
-    uc *outpack = malloc(ICMP_ECHOREQ_LEN);
+    uc *outpack = malloc(ICMP_ECHO_LEN);
 
     build_pack(outpack, src_addr, dst_addr);
 
@@ -198,17 +199,18 @@ void ping (c* src_addr, c* dst_addr)
 
 void recv_echo ()
 {
-    char* packet = malloc(ICMP_ECHOREQ_LEN);
-    int fromlen = sizeof (from);
-    int cc;
+    struct  sockaddr_in     from;
+    uc*                      packet  = malloc(ICMP_ECHO_LEN);
+    int                     fromlen = sizeof (from);
+    int                     cc;
 
     if ( (cc=recvfrom(
-                 s, packet, ICMP_ECHOREQ_LEN, 0,
+                 s, packet, ICMP_ECHO_LEN, 0,
                  (struct sockaddr *)&from, (socklen_t*)&fromlen)) < 0) {
         free(packet);
         fatal("PING: recvfrom failed.", ERROR_RCV_FAIL);
     } else {
-        struct ip *ip;
+        struct ip   *ip;
         struct icmp *icp;
 
         ip = (struct ip *) packet;
@@ -264,7 +266,7 @@ void build_pack ( uc *outpack, c* src, c* dst )
     ip->ip_src.s_addr = inet_addr(src);
     ip->ip_dst.s_addr = inet_addr(dst);
 
-    icp->icmp_type    = ICMP_ECHO;
+    icp->icmp_type    = ICMP_ECHOREQEST;
     icp->icmp_code    = 0;
     icp->icmp_cksum   = 0;
     icp->icmp_seq     = 1;
