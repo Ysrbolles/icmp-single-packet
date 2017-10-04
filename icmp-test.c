@@ -94,6 +94,8 @@
 
 typedef char             c;
 typedef unsigned char   uc;
+typedef uint16_t       u16;
+typedef uint32_t       u32;
 
 /* --------------------- */
 /* Property Declarations */
@@ -113,7 +115,7 @@ void    v_cli       ( int argc, c **argv              );
 
 // ICMP Functions
 void    ping        ( c* src_addr, c* dst_addr        );
-int     icmp_cksum  ( uint16_t *buffer, uint32_t size );
+int     icmp_cksum  ( u16 *buffer, u32 size           );
 u_short ip_cksum    ( u_short *buf, int nwords        );
 void    recv_echo   (   /* No parameter */            );
 int     ip_valid    ( c *ip                           );
@@ -359,7 +361,7 @@ void v_cli(int argc, c **argv)
     }
 }
 
-int icmp_cksum (uint16_t *buffer, uint32_t size)
+int icmp_cksum (u16 *buffer, u32 size)
 {
     unsigned long cksum=0;
     while(size >1) 
