@@ -1,17 +1,18 @@
 /**
- * ==| ICMP Packet Test
- * ==|
- * ==| Written by Nathan Fiscaletti
- * ==| 
- * ==| Adapted from https://www.cs.utah.edu/~swalton/listings/sockets/programs/part4/chap18/ping.c
- * ==| (See license in original file)
- * ==| 
- * ==| This file will send an ICMP Echo Request packet over a raw C socket and wait 
- * ==| for a response on the socket of type ICMP echo reply. 
- * ==| 
- * ==| The raw socket used to send the ICMP Echo Request packet disables IP_HDRINCL
- * ==| so that we can instead build our own IP header for the packet.
- * ==| 
+ * ICMP Packet Test
+ * 
+ * Adapted from https://bit.ly/2KrzYnJ
+ * (See license in original file)
+ *  
+ * This file will send an ICMP Echo Request packet 
+ * over a raw C socket and wait for a response on 
+ * the socket of type ICMP echo reply. 
+ *  
+ * The raw socket used to send the ICMP Echo Request 
+ * packet disables IP_HDRINCL so that we can instead 
+ * build our own IP header for the packet. 
+ *
+ * @author Nathan Fiscaletti
  */
 
 /* --------------------- */
@@ -351,4 +352,3 @@ u_short ip_cksum (u_short *buf, int nwords)
   sum += (sum >> 16);
   return ~sum;
 }
-
